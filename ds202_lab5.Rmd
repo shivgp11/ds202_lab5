@@ -1,0 +1,71 @@
+---
+title: "ds202_lab5"
+author: "Shiv Patel"
+date: "11/17/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(classdata)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(readxl)
+library(readr)
+library(lubridate)
+```
+```{r}
+acc <- read.csv("https://raw.githubusercontent.com/xdaiISU/ds202materials/master/hwlabs/fars2017/accident.csv", stringsAsFactors = FALSE)
+
+per <- read.csv("https://raw.githubusercontent.com/xdaiISU/ds202materials/master/hwlabs/fars2017/person.csv", stringsAsFactors = FALSE)
+
+```
+
+```{r}
+acc <- acc %>% drop_na()
+per <- per %>% drop_na()
+```
+1.
+```{r}
+per_fatal <- per %>% filter(INJ_SEV == 4)
+per_fatal$INJ_SEV
+```
+
+2.
+```{r}
+df <- per_fatal %>% group_by(STATE, MAKE) %>% summarize(totalFatalities = n())
+dangerMake <- df %>% group_by(STATE) %>% filter(totalFatalities == max(totalFatalities))
+dangerMake
+
+```
+3.
+```{r}
+states <- map_data("state")
+
+```
+4.
+```{r}
+join <- acc %>% inner_join(per, by='ST_CASE')
+join
+```
+5. It appears that most of the accidents are fairly consistent throughout each day of the week within the first 24 hours. There are a small number of crashes that occur at the 99th hour. Also, most of the genders that are recorded fall between 1-2 with a few outliers in the 7-9 range. 
+```{r}
+df <- join %>% group_by(DAY_WEEK, HOUR.x, SEX) %>% summarize(tally = n())
+df %>% ggplot(aes(DAY_WEEK, tally, group)) + geom_bar(stat = "identity")
+df %>% ggplot(aes(HOUR.x, tally, group)) + geom_bar(stat = "identity")
+df %>% ggplot(aes(SEX, tally, group)) + geom_bar(stat = "identity")
+
+```
+6. 
+```{r}
+
+#df <- join %>% group_by(COUNTY.x) %>% mutate(totalFatalities = n())
+
+#ggplot(df, aes(x = df$LATITUDE, y = df$LONGITUD, fill=totalFatalities)) + geom_polygon(aes(group=group))
+
+```
+
